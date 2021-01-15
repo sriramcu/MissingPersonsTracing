@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% for img,img_name in my_images %}
+<img src="/static/{{ img }}" /><br>
+<b>{{ img_name }}</b><br>
+<br>
+{% endfor %}
+
+
+{% endblock content %}

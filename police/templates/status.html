@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Send message to police officer or get status</h2>
+<p>Choose victim name:</p>
+<form method="post">
+    {% csrf_token %}
+    
+    <select name="victim_details">
+		
+		  {% for victim in victims %}
+			<option value="{{ victim.id }}">{{ victim.name }}&emsp;{{ victim.mobile }}</option>             
+		  {% endfor %}
+			
+			       
+             
+     </select>
+     <br><br><br>
+     <label for="email">Enter secure key sent to your email:</label>&emsp;<input type="text" name = "key"><br><br><br>
+     <label for="message">Enter any message you wish to convey to the police officer:</label>&emsp;<textarea name = "message" value = "message"></textarea><br><br><br>
+     
+    
+    <input type="submit" name="Submit" value="Submit">
+    
+</form>
+
+{% if status %}
+<h1>Case Status</h1>
+<p>{{ status }}</p><br><br><br><br><br>
+{% endif %}
+
+{% endblock content %}

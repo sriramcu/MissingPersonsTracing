@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h1>Facial recognition</h1>
+
+    {{ my_form }}
+    <input type="submit" name="Submit" value="Submit">
+  </form>
+  </form>
+
+  {% if uploaded_file_url %}
+    
+    
+    <img src="/static/{{ img_name }}" /><br><br>
+    <p>{{ img_name }}</p>
+    <h3>Confidence={{ confidence }}%</h3><br>
+  {% endif %}
+
+	
+
+{% endblock %}

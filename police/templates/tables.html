@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tables</h1>
+<form method="post">
+    {% csrf_token %}
+    <select name="table">
+         {% for tablename in tables %}
+             <option
+              value="{{ tablename }}"
+              {% if selected_table == tablename %}
+                  selected="selected"
+              {% endif %}
+             >{{ tablename }}</option>
+         {% endfor %}
+    </select>
+    <input type="submit" name="Select" value="Select">
+</form>
+{% if selected_table %}
+  <p>
+    Nice, you selected: {{ selected_table }}!
+  </p>
+
+<table border="1">
+    
+    <tr>
+        {% for column in columns %}
+        <th>{{ column }}</th>
+        {% endfor %}
+    </tr>
+    
+    {% for row in returned_table %}
+    <tr>
+        {% for cell in row %}
+        <td>{{ cell }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    
+</table>
+<br>
+
+
+<h3>Update Database</h3>
+<br>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for column in columns %}
+    {% if column == 'messages' or column == 'status' or column == 'comments' %}
+    <label for="{{ column }}">{{ column }}</label>&emsp;<textarea id="{{ column }}" name="{{ column }}"></textarea><hr style="height:0px; visibility:hidden;" />
+    
+    {% else %}
+    <label for="{{ column }}">{{ column }}</label>&emsp;<input type="text" id="{{ column }}" name="{{ column }}"><hr style="height:0px; visibility:hidden;" />
+    {% endif %}
+    {% endfor %}    
+    <br>
+    <input type="submit" name="Update" value="Update">
+</form>
+
+{% endif %}
+{% endblock content %}

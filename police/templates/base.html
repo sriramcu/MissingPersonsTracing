@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<title>Missing Persons Portal</title>
+<head>
+	
+
+
+
+<style>
+label { display: inline-block; width: 140px; }
+.button {
+    display: block;
+    width: 115px;
+    height: 40px;
+    background: #4E9CAF;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    line-height: 25px;
+}
+
+body {
+  background-image: url("/static/police/BCP.webp");
+  background-repeat: no-repeat;
+  background-size:cover;
+}
+
+
+</style>
+</head>
+<h1>Missing Persons Portal</h1>
+<body>
+				{% if user.is_superuser %}
+				<p><b>Admin</b></p>
+				{% endif %}
+                <a class="button" href="{% url 'base' %}">Home</a> <br>
+                <a class="button" href="{% url 'admin:index' %}">Admin</a> <br>
+                <a class="button" href="{% url 'register_case' %}">Register Case</a> <br>
+                
+                
+   
+              {% if user.is_authenticated %}
+                <a class="button" href="{% url 'profile' %}">Profile</a> <br>                
+                <a class="button" href="{% url 'tables' %}">Tables</a> <br>
+                <a class="button" href="{% url 'facial_recognition' %}">Facial recognition</a> <br>
+                <a class="button" href="{% url 'upload' %}">Upload Image to database</a> <br>
+                <a class="button" href="{% url 'show_all' %}">Show all Images</a> <br>
+                <a class="button" href="{% url 'logout' %}">Logout</a> <br>
+                
+              {% else %}
+                <a class="button" href="{% url 'login' %}">Login</a> <br>
+                <a class="button" href="{% url 'register' %}">Register Police Account</a> <br>
+                <a class="button" href="{% url 'status' %}">Case Status/ Send Messages</a> <br>
+                
+               
+              {% endif %}
+           
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-8">
+          {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            {% if message.tags %}<script>alert("{{ message }}")</script></li>{% endif %}
+            {% endfor %}
+        </ul>
+{% endif %}
+          {% block content %}{% endblock %}
+        </div>
+       
+      </div>
+    </main>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+   
+
+</body>
+</html>

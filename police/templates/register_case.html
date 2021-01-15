@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{{ form1.media }}
+<h1>Case Registration</h1>
+
+<p>Enter number of sightings:</p>
+<form method="post">
+    {% csrf_token %}
+    <select name="num_sightings">
+		{% with '1 2 3 4 5' as list %}
+		  {% for i in list.split %}
+			<option value="{{ i }}">{{ i }}</option>             
+		  {% endfor %}
+			{% endwith %}
+			       
+             
+        
+    </select>
+    
+    <input type="submit" name="Select" value="Select">
+    
+</form>
+<br>
+
+{% if my_num > 0 %}
+  <p>
+    Nice, you selected: {{ my_num }} sightings.
+  </p>
+
+<h3>Enter details below</h3>
+<br>
+
+<form method="post">
+	{% csrf_token %}
+    {{ form1.as_p }}
+    {% for i in num_range %}
+    <b>Sighting number {{ i|add:"1" }}</b>
+    {{ form2.as_p }}
+    {% endfor %}
+    
+    <input type="submit" name="Register" value="Register">
+</form>
+
+{% endif %}
+{% endblock content %}
