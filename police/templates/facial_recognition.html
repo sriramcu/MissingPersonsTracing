@@ -7,15 +7,19 @@
     {% csrf_token %}
     <h1>Facial recognition</h1>
 
-    {{ my_form }}
+    <input type="file" name="myfile" />
+    <select name="img_type">
+    <option value="criminal">Criminal</option>
+    <option value="victim">Victim</option>
+    </select><br><br>
     <input type="submit" name="Submit" value="Submit">
   </form>
-  </form>
+ 
 
   {% if uploaded_file_url %}
     
     
-    <img src="/static/{{ img_name }}" /><br><br>
+    <img id="profileImage" src="data:image/jpg;base64, {{ ba }}"><br><br>
     <p>{{ img_name }}</p>
     <h3>Confidence={{ confidence }}%</h3><br>
   {% endif %}

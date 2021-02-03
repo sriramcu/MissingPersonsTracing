@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import inlineformset_factory
-from police.models import Police, Victim, Sightings,input_image, other_input_image
+from police.models import Police, Victim, Sightings
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput, DateTimePickerInput, MonthPickerInput, YearPickerInput   
 
 class UserRegisterForm(UserCreationForm):
@@ -40,16 +40,4 @@ class SightingsForm(forms.ModelForm):
         widgets = {'date_time_sighting': DateTimePickerInput(format='%d/%m/%Y %H:%M:%S')}
         
         
-class ImageForm(forms.ModelForm):
-	class Meta:
-		model = input_image
-		fields = '__all__'
-		
-class OtherImageForm(forms.ModelForm):
-	class Meta:
-		model = other_input_image
-		fields = '__all__'
-		
 
-
-#SightingsFormSet =  inlineformset_factory(Victim,Sightings,SightingsForm,extra=1)

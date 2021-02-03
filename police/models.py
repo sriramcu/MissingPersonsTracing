@@ -4,6 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError 
 import datetime
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 
@@ -106,11 +107,3 @@ class Suspect(models.Model):
         db_table = 'suspects'
         verbose_name_plural = db_table
     
-
-class input_image(models.Model):
-	image = models.FileField(upload_to='uploads')
-	
-	
-class other_input_image(models.Model):
-	image = models.FileField(upload_to='uploads')
-	img_type = models.CharField(max_length=20, choices=(('suspect','Suspect'),('victim','Victim')), default='suspect')

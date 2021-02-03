@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm, AdditionalPoliceDetailsForm, SightingsForm, VictimDetailsForm, ImageForm, OtherImageForm
+from .forms import UserRegisterForm, AdditionalPoliceDetailsForm, SightingsForm, VictimDetailsForm
 from django.contrib import messages
 import time
 from django.apps import apps 
@@ -23,30 +23,31 @@ import shutil
 from PIL import Image
 from django.utils.datastructures import MultiValueDictKeyError
 import io
+import codecs
 
 '''
 Django project to assist victims and detectives to trace missing people and the suspects. Includes facial recognition, MongoDB.
 '''
 
+#Modify these fields as per the Atlas cluster created as instructed in the README
 cluster = MongoClient("mongodb+srv://sriramcu:rvce_cse@cluster0.imfyu.mongodb.net/dbdpartb")
-
 db = cluster["dbdpartb"]
 fs = gridfs.GridFS(db)
 fsfiles = db["fs.files"]
 test = db["test"]
-
+#End of modifications
 
 def register(request):
     if 'context' in request.session:
         del request.session['context']
     if request.method == 'POST':
-        print(request.POST)
+
         form = UserRegisterForm(request.POST)
         extended_form = AdditionalPoliceDetailsForm(request.POST)
         if form.is_valid() and extended_form.is_valid():
             form.save()
         
-            print(extended_form.cleaned_data)
+          
       
             cd = extended_form.cleaned_data
 
@@ -72,11 +73,10 @@ def register_case(request):
     if 'context' in request.session:
         del request.session['context']
     if request.method == 'POST' and 'Select' in request.POST and 'Register' not in request.POST:
-        print("1")
-        print(request.POST)
+       
         
         num_sightings = int(request.POST.get('num_sightings')) #max 5
-        print(num_sightings)
+      
         if not (num_sightings>0):
             messages.error(request,"Number of sightings must be at least one")
             
@@ -92,14 +92,14 @@ def register_case(request):
         
         
     elif request.method == 'POST' and 'Register' in request.POST:
-        print("2")
-        print(request.POST)
+     
+       
         num_sightings = request.session['num']
         form1 = VictimDetailsForm(request.POST)
         form2 = SightingsForm(request.POST)
         
-        #if form1.is_valid() and form2.is_valid():
-        print("Will add")
+        
+       
         
         cd = dict(request.POST)       
         
@@ -107,7 +107,7 @@ def register_case(request):
         last_victim = Victim.objects.last()
         for i in range(num_sightings): #use i+1 for common fields and i for unique
             Sightings.objects.create(victim_id = last_victim,street=cd['street'][i+1],area=cd['area'][i+1],city=cd['city'][i+1],state=cd['state'][i+1],date_time_sighting=cd['date_time_sighting'][0])
-        print("Added")
+      
             
         return render(request, 'register_case.html', {'form1':form1 ,'form2':form2,'my_num':num_sightings,'num_range':range(num_sightings)})
         
@@ -116,38 +116,14 @@ def register_case(request):
     
         
         
-    print("3")      
+   
     form1 = VictimDetailsForm()
     form2 = SightingsForm()
     return render(request, 'register_case.html', {'form1':form1 ,'form2':form2,'num_range':range(0)})
 
 
 def base(request):
-    for fi in os.listdir('/home/sriram/work/MissingPersons/media/uploads'):
-        os.remove(os.path.join('/home/sriram/work/MissingPersons/media/uploads',fi))
-        
-    for f in os.listdir('/home/sriram/work/MissingPersons/uploads/'):
-        try:
-            os.remove(os.path.join('/home/sriram/work/MissingPersons/uploads/',f))
-            
-        except OSError as e:
-            print(e)
-            continue
-            
-        else:
-            print("{} deleted".format(f))
-            
-    for f in os.listdir('/home/sriram/work/MissingPersons/police/static/'):
-        try:
-            os.remove(os.path.join('/home/sriram/work/MissingPersons/police/static/',f))
-            
-        except OSError as e:
-            print(e)
-            continue
-            
-            
-        else:
-            print("{} deleted".format(f))
+   
     
     if 'context' in request.session:
         del request.session['context']
@@ -204,8 +180,6 @@ def tables(request):
     
     elif request.method == "POST" and "Update" in request.POST and 'context' in request.session:
       
-        #selected_operation = request.POST.get("operation")
-        
     
         context = request.session['context']
         columns = context['columns']
@@ -264,7 +238,7 @@ def tables(request):
                 
         else:
             messages.error(request,"Unknown error")
-            print(selected_table)
+         
             return render(request, 'tables.html', context)
                     
             
@@ -272,12 +246,12 @@ def tables(request):
                     
                 
         try:
-            print(query)
+          
             cursor2 = connection.cursor()
             res = cursor2.execute(query)
         
         except Exception as e:
-            print(e)
+      
             messages.error(request,"Error in executing SQL Query: "+str(e))
             return render(request, 'tables.html', context)
         else:
@@ -331,103 +305,62 @@ def status(request):
 
 @login_required
 def show_all(request):
-    for f in os.listdir('/home/sriram/work/MissingPersons/police/static/'):
-        try:
-            os.remove(os.path.join('/home/sriram/work/MissingPersons/police/static/',f))
-            
-        except OSError as e:
-            print(e)
-            continue
-            
-        else:
-            print("{} deleted".format(f))
+   
             
     images = fsfiles.find()
     my_images = []
     names = []
     for i,image in enumerate(images):
-        #print(type(image))
+     
         data = fs.get(image["_id"]).read()
         
-        ba = bytearray(data)
-        # ~ pic = Image.open(io.BytesIO(ba).seek(0))
-        # ~ pic.save("/home/sriram/work/MissingPersons/police/static/tmp{}.jpg".format(i))
+
         
-        f1 = open("/home/sriram/work/MissingPersons/police/static/tmp{}.jpg".format(i),'wb')
-        f1.write(ba)
-        f1.close()
-        my_images.append("tmp{}.jpg".format(i))
+        ba = codecs.encode(data, 'base64')
+        ba = ba.decode('utf-8')
         names.append(image['filename'])
+        my_images.append(ba)
         
-    print(names)
+
     all_my_images = zip(my_images,names)
     return render(request, "show_all.html",{"my_images":all_my_images})
     
     
 @login_required
 def facial_recognition(request):
-    my_form = OtherImageForm()
+
     
-    for fi in os.listdir('/home/sriram/work/MissingPersons/media/uploads'):
-        os.remove(os.path.join('/home/sriram/work/MissingPersons/media/uploads',fi))
-    for f in os.listdir('/home/sriram/work/MissingPersons/uploads/'):
-        try:
-            os.remove(os.path.join('/home/sriram/work/MissingPersons/uploads/',f))
-            
-        except OSError as e:
-            print(e)
-            continue
-            
-        else:
-            print("{} deleted".format(f))
-            
-    for f in os.listdir('/home/sriram/work/MissingPersons/police/static/'):
-        try:
-            os.remove(os.path.join('/home/sriram/work/MissingPersons/police/static/',f))
-            
-        except OSError as e:
-            print(e)
-            continue
-            
-            
-        else:
-            print("{} deleted".format(f))
+    
+    
     try:
         if request.method == 'POST':
-            print(request.POST)
-            print("Type")
+           
+            print("request.FILES for facial recognition is:")
+            print(request.FILES)
             
             person_type = request.POST['img_type'].lower()
                 
-            # ~ myfile = request.FILES['myfile']
-            # ~ fss = FileSystemStorage(location='uploads')
-            # ~ filename = fss.save(myfile.name, myfile)
-            # ~ uploaded_file_url = fss.url(filename)
-            # ~ proper_filename = os.path.abspath(os.path.join('uploads',filename))
-            # ~ mugshots_dir = '/home/sriram/work/MissingPersons/police/static/mugshots'
-            # ~ dir_imgs = os.listdir(mugshots_dir)
-            
-            my_form = OtherImageForm(request.POST,request.FILES)
-            print("Just befre ccheck")
-            if not my_form.is_valid():
-                print("Hello")
-            
-            print(my_form.cleaned_data)
-
-            my_form.save()
-            proper_filename = os.path.join('/home/sriram/work/MissingPersons/media/uploads',os.listdir('/home/sriram/work/MissingPersons/media/uploads')[0])
-            
-            print(proper_filename)
+  
+            f1 = request.FILES.get('myfile')
+            filename = f1.name
+            ba = bytearray([])
+            for chunk in f1.chunks():                
+                ba.extend(chunk)
+                
+            img = Image.open(io.BytesIO(ba))
+            img.save(filename)
             
             min_results = []
             known_encodings = []
-            unknown_image = face_recognition.load_image_file(proper_filename)
+            unknown_image = face_recognition.load_image_file(filename)#which has been stored in cwd by the line img.save(filename)
             try:
                 unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
                 
             except IndexError:
                 messages.error(request,"No face encodings found for uploaded image")
-                return render(request, 'facial_recognition.html',{'my_form':my_form})
+                os.remove(filename)
+                return render(request, 'facial_recognition.html')
+                
             images = fsfiles.find({"filename":{"$regex":person_type}})
             images_list = [x for x in images]
             for img in images_list:            
@@ -442,88 +375,92 @@ def facial_recognition(request):
                 min_results.append(face_distance) 
                 
             if len(min_results) == 0:
-                messages.error(request,"No images found in selected person type(suspect/victim)")
-                return render(request, 'facial_recognition.html',{'my_form':my_form})
-            print(min(min_results))
-            result_image = images_list[min_results.index(min(min_results))]['filename']
+                messages.error(request,"No images found in selected person type(criminal/victim)")
+                return render(request, 'facial_recognition.html')
+
+            result_image = images_list[min_results.index(min(min_results))]['filename']   #min results is list of face distances. images_list is list of image names:thus we obtain image name (not path) with min face distance
             img_obj = fsfiles.find_one({"filename":result_image})
-            #for img_obj in img_objs:
-            #print(type(img_obj))
+      
             data = fs.get(img_obj["_id"]).read()
-            ba = bytearray(data)
-            pic = Image.open(io.BytesIO(ba))
-            pic.save("/home/sriram/work/MissingPersons/police/static/{}".format(result_image))
-            print(result_image)
+   
+            ba = codecs.encode(data, 'base64')
+            ba = ba.decode('utf-8')
+  
+            
             confidence = 100-100*min(min_results)
-            for fi in os.listdir('/home/sriram/work/MissingPersons/media/uploads'):
-                os.remove(os.path.join('/home/sriram/work/MissingPersons/media/uploads',fi))
-            return render(request, 'facial_recognition.html', {'img_name':result_image,'confidence':confidence,'uploaded_file_url':'MongoDB','my_form':my_form})
+            os.remove(filename)
+            print("{} deleted".format(filename))
+            return render(request, 'facial_recognition.html', {'img_name':result_image,'ba':ba,'confidence':confidence,'uploaded_file_url':'MongoDB'})
     
-    except MultiValueDictKeyError:
+    except MultiValueDictKeyError as e:
         messages.error(request,"Image file not chosen properly")
+        print(request.FILES)
+        print(request.POST)
+        print(e)
         
   
   
-    return render(request, 'facial_recognition.html',{'my_form':my_form})
+    return render(request, 'facial_recognition.html')
     
     
 @login_required
 def upload(request):
-    for fi in os.listdir('/home/sriram/work/MissingPersons/media/uploads'):
-        os.remove(os.path.join('/home/sriram/work/MissingPersons/media/uploads',fi))
-    my_form = ImageForm()
+
     if request.method == 'POST':
         print(request.POST)
     if request.method == 'GET':
-        return render(request, 'upload.html',{'my_form':my_form})
+        return render(request, 'upload.html')
     try:
         if request.method == 'POST':
-            my_form = ImageForm(request.POST,request.FILES)
-            if not my_form.is_valid():
-                print("Hello")
-                print(my_form.errors)
-                print(request.FILES)
+            print("request.FILES for upload is:")
+            print(request.FILES)
+            if 'Submit' not in request.POST:
+                messages.error("Image cannot be uploaded due to unknown reasons.")
+                return render(request,'upload.html')
             
-
-            my_form.save()
-            proper_filename = os.path.join('/home/sriram/work/MissingPersons/media/uploads',os.listdir('/home/sriram/work/MissingPersons/media/uploads')[0])
+            f1 = request.FILES.get('myfile')
+            filename = f1.name
             
-            print(proper_filename)
-            if 'victim' not in proper_filename.lower() and 'criminal' not in proper_filename.lower():
+          
+            ba = bytearray([])
+            for chunk in f1.chunks():                
+                ba.extend(chunk)
+                
+            img = Image.open(io.BytesIO(ba))
+            img.save(filename)
+            
+            f = open(filename,'rb')
+            if 'victim' not in filename.lower() and 'criminal' not in filename.lower():
                 messages.error(request,"File name must contain the word victim or criminal")
-                return render(request,'upload.html',{'my_form':my_form})
-            f = open(proper_filename,'rb')
+                return render(request,'upload.html')
+
             
             
             try:
-                known_image = face_recognition.load_image_file(f.name)
+                known_image = face_recognition.load_image_file(filename)
                 known_encoding = face_recognition.face_encodings(known_image)[0]
                 
             except IndexError:
-                #messages.error(request,"No face encodings found for uploaded image")
+       
                 messages.error(request,"No face encodings found for uploaded image")
+                os.remove(filename)
                 return render(request,'upload.html')
 
-            a = fs.put(f,filename=os.path.basename(f.name),ke=known_encoding.tolist())
+            a = fs.put(f,filename=filename,ke=known_encoding.tolist())
             messages.success(request,"Image uploaded successfuly")
             f.close()
-            for fi in os.listdir('/home/sriram/work/MissingPersons/media/uploads'):
-                os.remove(os.path.join('/home/sriram/work/MissingPersons/media/uploads',fi))
-            return render(request,'upload.html',{'uploaded_file_url':'Mongo DB','my_form':my_form})
+            os.remove(filename)
+            print("{} deleted".format(filename))
+            return render(request,'upload.html')
             
-    except MultiValueDictKeyError:
+    except MultiValueDictKeyError as e:
         messages.error(request,"Image file not chosen properly")
+        print(request.FILES)
+        print(request.POST)
+        print(e)
         
         
-    return render(request,'upload.html',{'my_form':my_form})
+    return render(request,'upload.html')
             
     
     
-        
-'''
-request.POST 
-<QueryDict: {'csrfmiddlewaretoken': ['WWUKda7mF8aLSEmsH3CoSCiovIDnPF21wogJRHWqv6uE4ZQcRwBiLybjd0n0AJD3'], 'name': ['Sriram N C'], 'sex': ['M'], 'dob': ['1990-04-14'], 'mobile': ['9845784933'], 'street': ['318, 6th A Main,  2nd Block', '318, 6th A Main,  2nd Block'], 'area': ['PQR3', 'PQR3'], 'city': ['Bengaluru', 'Bengaluru'], 'state': ['KA', 'KA'], 'eye_colour': ['d'], 'hair_colour': ['e'], 'skin_tone': ['e'], 'possible_suspects': ['1'], 'police_station_id': ['1'], 'comments': ['cie1'], 'status': ['w'], 'messages': ['w'], 'date_time_sighting': ['2000-04-14'], 'Register': ['Register']}>
-
-
-
-'''

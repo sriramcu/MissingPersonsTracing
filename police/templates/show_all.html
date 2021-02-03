@@ -2,7 +2,7 @@
 {% block content %}
 
 {% for img,img_name in my_images %}
-<img src="/static/{{ img }}" /><br>
+<img id="profileImage" src="data:image/jpg;base64, {{ img }}"><br>
 <b>{{ img_name }}</b><br>
 <br>
 {% endfor %}
