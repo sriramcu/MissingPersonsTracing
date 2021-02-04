@@ -71,8 +71,9 @@ class Victim(models.Model):
     police_officer_id = models.ForeignKey('Police',on_delete = models.CASCADE,default = '',null=True,blank=True)
     police_station_id = models.ForeignKey('PoliceStation',on_delete = models.CASCADE,default = '',null=True,blank=True)
     comments = models.CharField(max_length=200,blank = True)
-    status = models.CharField(max_length=500,blank = True,null=True,default='')
+    status = models.CharField(max_length=500,blank = True,null=True,default='Case registered')
     messages  = models.CharField(max_length=500,blank = True,null=True,default='')
+    key = models.CharField(blank = True,null=True,default='0000',max_length=4)
     class Meta:
         db_table = 'victims'
         verbose_name_plural = db_table

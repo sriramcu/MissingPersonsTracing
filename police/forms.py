@@ -28,7 +28,7 @@ class AdditionalPoliceDetailsForm(forms.ModelForm):
 class VictimDetailsForm(forms.ModelForm):
     class Meta:
         model = Victim
-        exclude = ('police_station_id','suspect_id','status','messages',)
+        exclude = ('police_station_id','suspect_id','status','messages','police_officer_id','key',)
         widgets = {
             'dob': DatePickerInput(format='%d/%m/%Y')
         }

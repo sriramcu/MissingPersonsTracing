@@ -24,7 +24,9 @@ from PIL import Image
 from django.utils.datastructures import MultiValueDictKeyError
 import io
 import codecs
-
+from datetime import datetime
+from django.core.mail import send_mail
+import random
 '''
 Django project to assist victims and detectives to trace missing people and the suspects. Includes facial recognition, MongoDB.
 '''
@@ -100,15 +102,24 @@ def register_case(request):
         
         
        
-        
+        key = str(random.randint(1000,9999))
         cd = dict(request.POST)       
         
-        Victim.objects.create(name=cd['name'][0],sex=cd['sex'][0],dob=cd['dob'][0],mobile=cd['mobile'][0],street=cd['street'][0],area=cd['area'][0],city=cd['city'][0],state=cd['state'][0],eye_colour=cd['eye_colour'][0],hair_colour=cd['hair_colour'][0],skin_tone=cd['skin_tone'][0],comments=cd['comments'][0],status=cd['status'][0],messages=cd['messages'][0])
+        Victim.objects.create(key=key,email=cd['email'][0],name=cd['name'][0],sex=cd['sex'][0],dob=datetime.strptime(cd['dob'][0], '%d/%m/%Y'),mobile=cd['mobile'][0],street=cd['street'][0],area=cd['area'][0],city=cd['city'][0],state=cd['state'][0],eye_colour=cd['eye_colour'][0],hair_colour=cd['hair_colour'][0],skin_tone=cd['skin_tone'][0],comments=cd['comments'][0])
         last_victim = Victim.objects.last()
         for i in range(num_sightings): #use i+1 for common fields and i for unique
-            Sightings.objects.create(victim_id = last_victim,street=cd['street'][i+1],area=cd['area'][i+1],city=cd['city'][i+1],state=cd['state'][i+1],date_time_sighting=cd['date_time_sighting'][0])
-      
-            
+            Sightings.objects.create(victim_id = last_victim,street=cd['street'][i+1],area=cd['area'][i+1],city=cd['city'][i+1],state=cd['state'][i+1],date_time_sighting=datetime.strptime(cd['date_time_sighting'][0],'%d/%m/%Y %H:%M:%S'))
+               
+               
+        send_mail(
+        'Secret Key',
+        'The secret key is {}'.format(key),
+        'csriram12345@gmail.com',
+        [cd['email'][0]],
+        fail_silently=False,
+        )
+        
+        messages.success(request,"Case successfuly registered")
         return render(request, 'register_case.html', {'form1':form1 ,'form2':form2,'my_num':num_sightings,'num_range':range(num_sightings)})
         
 
@@ -275,18 +286,23 @@ def status(request):
     context = {'victims':victims}
     if request.method == 'POST' and 'Submit' in request.POST:
         key = request.POST['key']
-        if str(key) != '0000':
+        victim_id = request.POST['victim_details']
+        victim_id = int(victim_id) if victim_id else None
+        
+        actual_key = Victim.objects.get(pk=victim_id).key
+        if str(key) != actual_key:
             messages.error(request,"Entered key is wrong. Please try again.")
             return render(request,'status.html',context)
             
         
             
-        victim_id = request.POST['victim_details']
-        victim_id = int(victim_id) if victim_id else None
+        
         
         if request.POST['message'] != '':
             v = Victim.objects.get(pk = victim_id)
             ip_address, is_routable = get_client_ip(request)
+            if v.messages == None:
+                v.messages = ''
             v.messages += '\n' + ip_address + '  ' + request.POST['message']
             v.save()
             
@@ -459,6 +475,8 @@ def upload(request):
         print(request.POST)
         print(e)
         
+    except Exception as e:
+        messages.error("File could not be uploaded- please check that file is an image of valid format.")
         
     return render(request,'upload.html')
             
