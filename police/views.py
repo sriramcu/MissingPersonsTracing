@@ -32,7 +32,8 @@ Django project to assist victims and detectives to trace missing people and the 
 '''
 
 #Modify these fields as per the Atlas cluster created as instructed in the README
-cluster = MongoClient("mongodb+srv://sriramcu:rvce_cse@cluster0.imfyu.mongodb.net/dbdpartb")
+conn_string = "INSERT-YOUR-MONGODB-CONNECTION-STRING-HERE"
+cluster = MongoClient(conn_string)
 db = cluster["dbdpartb"]
 fs = gridfs.GridFS(db)
 fsfiles = db["fs.files"]
